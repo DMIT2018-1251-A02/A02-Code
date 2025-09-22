@@ -1,4 +1,4 @@
-<Query Kind="Expression">
+<Query Kind="Statements">
   <Connection>
     <ID>87b589ca-6377-4501-bf9b-ca701d8a544d</ID>
     <NamingServiceVersion>2</NamingServiceVersion>
@@ -14,21 +14,19 @@
 </Query>
 
 Orders
-	.GroupBy(o => o.Employee.EmployeeID)
+	.GroupBy(o => new {o.Customer.Country, o.OrderDate.Value.Year})
 	.Select(g => new
 	{
-		//  navigational property
-		Sales1 = g.Select(e => e.Employee.FirstName + " " 
-						+ e.Employee.LastName).FirstOrDefault(),
-		//  table lookup using key
-		Sales2 = Employees.Where(e => e.EmployeeID == g.Key)
-				.Select(e => e.FirstName + " " + e.LastName)
-				.FirstOrDefault(),
+		Country = g.Key.Country,
+		Year = g.Key.Year,
 		Orders = g.Select(o => new
 		{
-			OrderId = o.OrderID,
-			OrderDate = o.OrderDate,
+			OrderID = o.OrderID,
 			Customer = o.Customer.CompanyName
 		})
-		.Take(5)
-	})
+		.ToList()
+		.OrderBy(o => o.OrderID)
+	}).OrderBy(g => g.Country)
+	.ThenBy(g => g.Year)
+	.ToList()
+	.Dump();
