@@ -1,6 +1,6 @@
 <Query Kind="Program">
   <Connection>
-    <ID>e0a87a77-277f-494c-93a7-51c2205344d2</ID>
+    <ID>bf2de8d9-a3de-41ab-8ceb-e145025ece12</ID>
     <NamingServiceVersion>2</NamingServiceVersion>
     <Persist>true</Persist>
     <Server>.</Server>
@@ -25,6 +25,36 @@ using BYSResults;
 void Main()
 {
 	CodeBehind codeBehind = new CodeBehind(this); // “this” is LINQPad’s auto Context
+
+	#region Get Artist (GetArtist)
+	//	Fail
+	//	Rule:	artistID must be valid
+	codeBehind.GetArtist(0);
+	codeBehind.ErrorDetails.Dump("ArtistID must be Valid");
+
+	// Rule:	artistID must be valid (no artist id for 100000
+	codeBehind.GetArtist(100000);
+	codeBehind.ErrorDetails.Dump("No ArtistID for 100000");
+
+	//	Pass
+	codeBehind.GetArtist(1);
+	codeBehind.Artist.Dump("Pass - Valid ID");
+	#endregion
+
+	#region Get Artists (GetArtists)
+	//	Fail
+	//	Rule:	artistName must be valid
+	codeBehind.GetArtists(string.Empty);
+	codeBehind.ErrorDetails.Dump("Artist name is required");
+
+	// Rule:	artist must be valid (no artist name for abc)
+	codeBehind.GetArtists("abc");
+	codeBehind.ErrorDetails.Dump("No artists found for name 'abc'");
+
+	//	Pass
+	codeBehind.GetArtists("ABB");
+	codeBehind.Artists.Dump("Pass - Valid Artist Name");
+	#endregion
 
 }
 
@@ -54,6 +84,68 @@ public class CodeBehind(TypedDataContext context)
 	private string errorMessage = string.Empty;
 	#endregion
 
+	//	using default! so we do not get warning
+	//  artist view returned by the service using GetArtist().
+	public ArtistEditView Artist = default!;
+
+	//  artist view returned by the service  using GetArtist().
+	public List<ArtistEditView> Artists = default!;
+
+	//  GetArtist method
+	public void GetArtist(int artistID)
+	{
+		// clear previous error details and messages
+		errorDetails.Clear();
+		errorMessage = string.Empty;
+		feedbackMessage = String.Empty;
+
+		// wrap the service call in a try/catch to handle unexpected exceptions
+		try
+		{
+			var result = YourService.GetArtist(artistID);
+			if (result.IsSuccess)
+			{
+				Artist = result.Value;
+			}
+			else
+			{
+				errorDetails = GetErrorMessages(result.Errors.ToList());
+			}
+		}
+		catch (Exception ex)
+		{
+			// capture any exception message for display
+			errorMessage = ex.Message;
+		}
+	}
+	
+	//  GetArtists method
+	public void GetArtists(string artistName)
+	{
+		// clear previous error details and messages
+		errorDetails.Clear();
+		errorMessage = string.Empty;
+		feedbackMessage = String.Empty;
+
+		// wrap the service call in a try/catch to handle unexpected exceptions
+		try
+		{
+			var result = YourService.GetArtists(artistName);
+			if (result.IsSuccess)
+			{
+				Artists = result.Value;
+			}
+			else
+			{
+				errorDetails = GetErrorMessages(result.Errors.ToList());
+			}
+		}
+		catch (Exception ex)
+		{
+			// capture any exception message for display
+			errorMessage = ex.Message;
+		}
+	}
 }
 #endregion
 
@@ -114,6 +206,47 @@ public class Library
 		}
 		//	return the result
 		return result.WithValue(artist);
+	}
+
+	public Result<List<ArtistEditView>> GetArtists(string artistName)
+	{
+		//  Create a Result continer that will hold eithe a 
+		//  ArtistEditView object or success or any accumlated errors on failure
+		var result = new Result<List<ArtistEditView>>();
+
+		#region Business Logic and Parameter Exceptions
+		//	Business Rules
+		// 	These are processing rules that need to be satisfied
+		//		for valid data
+		//		Rule:  artist name is required
+
+		if (string.IsNullOrWhiteSpace(artistName))
+		{
+			result.AddError(new Error("Missing Information", "Artist name is required"));
+			//	need to exit because we have nothing to search for
+			return result;
+		}
+		#endregion
+
+		//  artist that meet our criteria
+		var artists = _hogWildContext.Artists
+					.Where(a => a.Name.ToUpper().Contains(artistName.ToUpper()))
+					.Select(a => new ArtistEditView
+					{
+						ArtistID = a.ArtistId,
+						Name = a.Name
+					}).ToList();
+
+		// if not artist were found with the artist name provied
+		if (artists.Count() == 0)
+		{
+			result.AddError(new Error("No Artist", $"No artist was found with the name: '{artistName}'"));
+			//	need to exit because we will not be able to add a null artist
+			//	to the result if there are any errors
+			return result;
+		}
+		//	return the result
+		return result.WithValue(artists);
 	}
 }
 
