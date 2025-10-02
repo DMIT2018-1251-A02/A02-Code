@@ -1,0 +1,84 @@
+﻿@page "/SamplePages/ArtistPage"
+
+<PageTitle>Artist</PageTitle>
+
+<!-- Displays a heading using MudBlazor's MudText component with "h3" typography. -->
+<MudText Typo="Typo.h3">Artist Info</MudText>
+
+@if (hasError)
+{
+    <MudAlert Elevation="2"
+              Severity="Severity.Error"
+              Dense="true">
+        <MudText Typo="Typo.h3">@errorMessage</MudText>
+        @foreach (var error in errorDetails)
+        {
+            <MudText Typo="Typo.body2">@error</MudText>
+        }
+    </MudAlert>
+}
+
+@if (hasFeedback)
+{
+    <MudAlert Elevation="2"
+              Severity="Severity.Info"
+              Dense="true">
+        <MudText Typo="Typo.h3">@feedbackMessage</MudText>
+    </MudAlert>
+}
+
+<MudStack Row="true" Spacing="4" AlignItems="AlignItems.Center">
+    <MudText Typo="Typo.h5">Artist Search</MudText>
+    <MudTextField @bind-Value="artistID"
+                  Label="Artist ID"
+                  Variant="Variant.Outlined" />
+    <MudTextField @bind-Value="artistName"
+                  Label="Artist Name"
+                  Variant="Variant.Outlined" />
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               OnClick="SearchID">
+        Search Artist ID
+    </MudButton>
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               OnClick="SearchName">
+        Search Artist Name
+    </MudButton>
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               OnClick="Clear">
+        Clear
+    </MudButton>
+</MudStack>
+@if (Artist != null && Artist.ArtistID > 0)
+{
+    <MudText Typo="Typo.h5"><strong>Artist ID:</strong> @Artist.ArtistID</MudText>
+    <MudText Typo="Typo.h5"><strong>Artist Name:</strong> @Artist.Name</MudText>
+}
+else
+@if (Artists != null && Artists.Count > 0)
+{
+    <MudDataGrid Items="Artists"
+                 Striped="true"
+                 FixedFooter="true"
+                 FixedHeader="true"
+                 Height="65vh">
+        <Columns>
+            <PropertyColumn Property="x => x.ArtistID" Title="Artist ID" />
+            <PropertyColumn Property="x => x.Name" Title="Artist Name" />
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager />
+        </PagerContent>
+    </MudDataGrid>
+}
+else
+{
+    <NoRecordsContent>
+        <MudText Typo="Typo.h6">
+            @((noRecords ? "No Artist found."
+                    : "Please search for artist."))
+    </MudText>
+</NoRecordsContent>
+}
