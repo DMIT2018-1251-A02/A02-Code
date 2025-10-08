@@ -45,6 +45,7 @@ void Main()
 	#endregion 
 
 	#region Add/Edit Customer (AddEditCustomer)
+	#region Fails
 	//	Fail
 	//	Rule:  customer cannot be null	
 	codeBehind.AddEditCustomer(null);
@@ -65,6 +66,7 @@ void Main()
 	customer.CustomerID = 0;
 	codeBehind.AddEditCustomer(customer);
 	codeBehind.ErrorDetails.Dump("Duplicated customer");
+	#endregion
 
 	#region new customer
 	// Pass:  valid new customer
@@ -102,6 +104,26 @@ void Main()
 	//  get the last two customer records to see if the customer 
 	//	  has been added
 	Customers.OrderByDescending(c => c.CustomerID).Take(2).Dump();
+	#endregion
+
+	#region edit customer
+	// get previous customer
+	customer = codeBehind.Customer;
+	customer.FirstName = GenerateName(6);
+	customer.LastName = GenerateName(9);
+	customer.Address1 = $"{GenerateName(14)} Avenue";
+
+	//  get the last two customer records to use as a 
+	//		comparison after we edit the previous record
+	Customers.OrderByDescending(c => c.CustomerID).Take(2).Dump("Before Editing");
+
+	//  update the database with the edited customer
+	codeBehind.AddEditCustomer(customer);
+	codeBehind.Customer.Dump("Edit customer");
+
+	//  get the last two customer records to see if the customer 
+	//	  has been edited
+	Customers.OrderByDescending(c => c.CustomerID).Take(2).Dump("After Editing");
 	#endregion
 	#endregion
 }
