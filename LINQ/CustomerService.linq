@@ -1,13 +1,13 @@
 <Query Kind="Program">
   <Connection>
-    <ID>37a64ce9-5c5f-4d4d-afc7-7324799c8fda</ID>
+    <ID>cb92c0e3-4ff0-43ea-9726-2fe3c34b87cd</ID>
     <NamingServiceVersion>2</NamingServiceVersion>
     <Persist>true</Persist>
     <Driver Assembly="(internal)" PublicKeyToken="no-strong-name">LINQPad.Drivers.EFCore.DynamicDriver</Driver>
     <AllowDateOnlyTimeOnly>true</AllowDateOnlyTimeOnly>
     <Server>.</Server>
     <Database>OLTP-DMIT2018</Database>
-    <DisplayName>OLTP-DMIT2018-ENtity</DisplayName>
+    <DisplayName>OLTP-DMIT2018-Entity</DisplayName>
     <DriverData>
       <EncryptSqlTraffic>True</EncryptSqlTraffic>
       <PreserveNumeric1>True</PreserveNumeric1>
@@ -29,7 +29,7 @@ void Main()
 {
 	CodeBehind codeBehind = new CodeBehind(this); // “this” is LINQPad’s auto Context
 
-	#region GetCustomer
+	#region Get Customer (GetCustomer)
 	//	Fail
 	//	Rule:  customer ID must be greater than zero
 	codeBehind.GetCustomer(0);
@@ -42,8 +42,68 @@ void Main()
 	// Pass:  valid customer ID
 	codeBehind.GetCustomer(1);
 	codeBehind.Customer.Dump("Pass - Valid customer ID");
-	#endregion
+	#endregion 
 
+	#region Add/Edit Customer (AddEditCustomer)
+	//	Fail
+	//	Rule:  customer cannot be null	
+	codeBehind.AddEditCustomer(null);
+	codeBehind.ErrorDetails.Dump("Customer is null");
+
+	// need to create a customer object
+	CustomerEditView customer = new CustomerEditView();
+
+	//	Rule:  missing first name, last name, phone number, and email are required (not empty)
+	codeBehind.AddEditCustomer(customer);
+	codeBehind.ErrorDetails.Dump("Missing required Fields");
+
+	// get an existing customer from the database
+	codeBehind.GetCustomer(1);
+	customer = codeBehind.Customer;
+
+	// reset customer the customer ID to zero so that it is consider a new customer.
+	customer.CustomerID = 0;
+	codeBehind.AddEditCustomer(customer);
+	codeBehind.ErrorDetails.Dump("Duplicated customer");
+
+	#region new customer
+	// Pass:  valid new customer
+	string firstName = GenerateName(6);
+	string lastName = GenerateName(9);
+	//  minimum data require to create a new customer.
+	//	the lookup have been simpify and should have included the category names
+	customer = new CustomerEditView()
+	{
+		FirstName = firstName,
+		LastName = lastName,
+		Address1 = "My Street",
+		Address2 = "My Street 2",
+		City = "Edmonton",
+		ProvStateID = Lookups.Where(l => l.Name == "Alberta")
+						.Select(l => l.LookupID).FirstOrDefault(),
+		CountryID = Lookups.Where(l => l.Name == "Canada")
+						.Select(l => l.LookupID).FirstOrDefault(),
+		PostalCode = "T1C3T1",
+		StatusID = Lookups.Where(l => l.Name == "Silver")
+						.Select(l => l.LookupID).FirstOrDefault(),
+		Email = $"{firstName}.{lastName}@bb.cc",
+		Phone = "7805551212",
+		RemoveFromViewFlag = false
+	};
+
+	//  get the last two customer records to use as a 
+	//		comparison after we added the new record
+	Customers.OrderByDescending(c => c.CustomerID).Take(2).Dump();
+
+	//  add the new customer to the database
+	codeBehind.AddEditCustomer(customer);
+	codeBehind.Customer.Dump("New customer");
+
+	//  get the last two customer records to see if the customer 
+	//	  has been added
+	Customers.OrderByDescending(c => c.CustomerID).Take(2).Dump();
+	#endregion
+	#endregion
 }
 
 // ———— PART 2: Code Behind → Code Behind Method ————
@@ -215,29 +275,27 @@ public class Library
 		//    rule:    customer cannot be null
 		if (editCustomer == null)
 		{
-			result.AddError(new Error("Missing Customer",
+			return result.AddError(new Error("Missing Customer",
 				"No customer was supply"));
-			//  need to exit because we have no customer view model to add/edit
-			return result;
 		}
 		//	rule: first name, last name, phone number 
-		//			and email are required (not empty)
-		if (string.IsNullOrEmpty(editCustomer.FirstName))
+		//			and email are required (not empty)		
+		if (string.IsNullOrWhiteSpace(editCustomer.FirstName))
 		{
 			result.AddError(new Error("Missing Information", "First name is required"));
 		}
 
-		if (string.IsNullOrEmpty(editCustomer.LastName))
+		if (string.IsNullOrWhiteSpace(editCustomer.LastName))
 		{
 			result.AddError(new Error("Missing Information", "Last name is required"));
 		}
 
-		if (string.IsNullOrEmpty(editCustomer.Phone))
+		if (string.IsNullOrWhiteSpace(editCustomer.Phone))
 		{
 			result.AddError(new Error("Missing Information", "Phone number is required"));
 		}
 
-		if (string.IsNullOrEmpty(editCustomer.Email))
+		if (string.IsNullOrWhiteSpace(editCustomer.Email))
 		{
 			result.AddError(new Error("Missing Information", "Email is required"));
 		}
@@ -247,7 +305,7 @@ public class Library
 			bool customerExist = _hogWildContext.Customers.Any(x =>
 										  x.FirstName.ToUpper() == editCustomer.FirstName.ToUpper() &&
 										  x.LastName.ToUpper() == editCustomer.LastName.ToUpper() &&
-										  x.Phone.ToUpper() == editCustomer.Phone.ToUpper()
+										  x.Phone == editCustomer.Phone
 										);
 
 			if (customerExist)
@@ -322,46 +380,82 @@ public class Library
 #endregion
 
 // ———— PART 4: View Models → Service Library View Model ————
-	//	This region includes the view models used to 
-	//	represent and structure data for the UI.
-	#region View Models
-	public class CustomerEditView
+//	This region includes the view models used to 
+//	represent and structure data for the UI.
+#region View Models
+public class CustomerEditView
+{
+	public int CustomerID { get; set; }
+	public string FirstName { get; set; } = string.Empty;
+	public string LastName { get; set; } = string.Empty;
+	public string Address1 { get; set; }
+	public string Address2 { get; set; }
+	public string City { get; set; }
+	//  Prov/State ID. Value will use a dropdown and the Lookup View Model
+	public int ProvStateID { get; set; }
+	//  Country ID. Value will use a dropdown and the Lookup View Model
+	public int CountryID { get; set; }
+	public string PostalCode { get; set; }
+	public string Phone { get; set; } = string.Empty;
+	public string Email { get; set; } = string.Empty;
+	//  status ID.  Status value will use a dropdown and the Lookup View Model
+	public int StatusID { get; set; }
+	public bool RemoveFromViewFlag { get; set; }
+}
+#endregion
+
+//	This region includes support methods
+#region Support Method
+// Converts a list of error objects into their string representations.
+public static List<string> GetErrorMessages(List<Error> errorMessage)
+{
+	// Initialize a new list to hold the extracted error messages
+	List<string> errorList = new();
+
+	// Iterate over each Error object in the incoming list
+	foreach (var error in errorMessage)
 	{
-		public int CustomerID { get; set; }
-		public string FirstName { get; set; } = string.Empty;
-		public string LastName { get; set; } = string.Empty;
-		public string Address1 { get; set; }
-		public string Address2 { get; set; }
-		public string City { get; set; }
-		//  Prov/State ID. Value will use a dropdown and the Lookup View Model
-		public int ProvStateID { get; set; }
-		//  Country ID. Value will use a dropdown and the Lookup View Model
-		public int CountryID { get; set; }
-		public string PostalCode { get; set; }
-		public string Phone { get; set; } = string.Empty;
-		public string Email { get; set; } = string.Empty;
-		//  status ID.  Status value will use a dropdown and the Lookup View Model
-		public int StatusID { get; set; }
-		public bool RemoveFromViewFlag { get; set; }
+		// Convert the current Error to its string form and add it to errorList
+		errorList.Add(error.ToString());
 	}
-	#endregion
 
-	//	This region includes support methods
-	#region Support Method
-	// Converts a list of error objects into their string representations.
-	public static List<string> GetErrorMessages(List<Error> errorMessage)
+	// Return the populated list of error message strings
+	return errorList;
+}
+
+/// <summary>
+/// Generates a random name of a given length.
+/// The generated name follows a pattern of alternating consonants and vowels.
+/// </summary>
+/// <param name="len">The desired length of the generated name.</param>
+/// <returns>A random name of the specified length.</returns>
+public static string GenerateName(int len)
+{
+	// Create a new Random instance.
+	Random r = new Random();
+
+	// Define consonants and vowels to use in the name generation.
+	string[] consonants = { "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "l", "n", "p", "q", "r", "s", "sh", "zh", "t", "v", "w", "x" };
+	string[] vowels = { "a", "e", "i", "o", "u", "ae", "y" };
+
+	string Name = "";
+
+	// Start the name with an uppercase consonant and a vowel.
+	Name += consonants[r.Next(consonants.Length)].ToUpper();
+	Name += vowels[r.Next(vowels.Length)];
+
+	// Counter for tracking the number of characters added.
+	int b = 2;
+
+	// Add alternating consonants and vowels until we reach the desired length.
+	while (b < len)
 	{
-		// Initialize a new list to hold the extracted error messages
-		List<string> errorList = new();
-
-		// Iterate over each Error object in the incoming list
-		foreach (var error in errorMessage)
-		{
-			// Convert the current Error to its string form and add it to errorList
-			errorList.Add(error.ToString());
-		}
-
-		// Return the populated list of error message strings
-		return errorList;
+		Name += consonants[r.Next(consonants.Length)];
+		b++;
+		Name += vowels[r.Next(vowels.Length)];
+		b++;
 	}
+
+	return Name;
+}
 #endregion
