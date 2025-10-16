@@ -92,6 +92,47 @@ void Main()
 	codeBehind.Invoice.Dump("Pass - Existing Invoice");
 	#endregion
 
+	#region GetCustomerInvoices
+		//	Fail
+		//	Rule:  customer ID must be greater than zero
+		codeBehind.GetCustomerInvoices(0);
+		codeBehind.ErrorDetails.Dump("Customer ID must be greater than zero");
+	
+		// Rule:  customer ID must valid 
+		codeBehind.GetCustomerInvoices(1000000);
+		codeBehind.ErrorDetails.Dump("No customer was found for ID 1000000");
+	
+		// Pass:  customer part ID
+		codeBehind.GetCustomerInvoices(2);
+		codeBehind.CustomerInvoices.Dump("Pass - Valid customer ID");
+	#endregion
+
+	#region Add New Invoice
+	// Fail
+	// invoice cannot be null
+	codeBehind.AddEditInvoice(null);
+	codeBehind.ErrorDetails.Dump("Invoice cannot is null");
+
+	// setup Add Invoice
+	InvoiceView invoiceView = new InvoiceView();
+
+	// rule: customer id must be supply
+	// rule: employee id must be supply    
+	// rule: there must be invoice lines provided
+	codeBehind.AddEditInvoice(invoiceView);
+	codeBehind.ErrorDetails.Dump("Fail - All rules except rules involving invoice lines");
+
+	//  update missing fields
+	invoiceView.CustomerID = 1;
+	invoiceView.EmployeeID = 1;
+
+	// rule: missing part
+	InvoiceLineView invoiceLineView = new();
+	invoiceView.InvoiceLines.Add(invoiceLineView);
+	codeBehind.AddEditInvoice(invoiceView);
+	codeBehind.ErrorDetails.Dump("Fail - Missing part");
+	
+	#endregion
 }
 
 // ———— PART 2: Code Behind → Code Behind Method ————
@@ -130,6 +171,10 @@ public class CodeBehind(TypedDataContext context)
 	//  invoice view returned by the service
 	//	using both the GetInvoice() & AddEditInvoice	
 	public InvoiceView Invoice = default!;
+	
+	//	GetCustomerInvoices
+	public List<InvoiceView> CustomerInvoices= new();
+	
 
 	public void GetParts(int partCategoryID, string description, List<int> existingPartIDs)
 	{
@@ -212,6 +257,60 @@ public class CodeBehind(TypedDataContext context)
 		}
 	}
 
+	public void GetCustomerInvoices(int customerID)
+	{
+		// clear previous error details and messages
+		errorDetails.Clear();
+		errorMessage = string.Empty;
+		feedbackMessage = String.Empty;
+
+		// wrap the service call in a try/catch to handle unexpected exceptions
+		try
+		{
+			var result = YourService.GetCustomerInvoices(customerID);
+			if (result.IsSuccess)
+			{
+				CustomerInvoices = result.Value;
+			}
+			else
+			{
+				errorDetails = GetErrorMessages(result.Errors.ToList());
+			}
+		}
+		catch (Exception ex)
+		{
+			// capture any exception message for display
+			errorMessage = ex.Message;
+		}
+	}
+
+	public void AddEditInvoice(InvoiceView invoiceView)
+	{
+		// clear previous error details and messages
+		errorDetails.Clear();
+		errorMessage = string.Empty;
+		feedbackMessage = String.Empty;
+
+		// wrap the service call in a try/catch to handle unexpected exceptions
+		try
+		{
+			var result = YourService.AddEditInvoice(invoiceView);
+			if (result.IsSuccess)
+			{
+				Invoice = result.Value;
+			}
+			else
+			{
+				errorDetails = GetErrorMessages(result.Errors.ToList());
+			}
+		}
+		catch (Exception ex)
+		{
+			// capture any exception message for display
+			errorMessage = ex.Message;
+			errorMessage.Dump();
+		}
+	}
 
 }
 #endregion
@@ -451,6 +550,234 @@ public class Library
 		return _hogWildContext.Employees
 			.Where(x => x.EmployeeID == employeeId && !x.RemoveFromViewFlag)
 			.Select(x => $"{x.FirstName} {x.LastName}").FirstOrDefault() ?? string.Empty;
+	}
+
+	//	Get the customer invoices
+	public Result<List<InvoiceView>> GetCustomerInvoices(int customerId)
+	{
+		// Create a Result container that will hold either a
+		//	PartView objects on success or any accumulated errors on failure
+		var result = new Result<List<InvoiceView>>();
+		#region Business Rules
+		//	These are processing rules that need to be satisfied
+		//		rule:	customerID must be valid
+		//		rule: 	RemoveFromViewFlag must be false
+		if (customerId == 0)
+		{
+			result.AddError(new Error("Missing Information",
+							"Please provide a valid customer id"));
+			//  need to exit because we have no customer information
+			return result;
+		}
+		#endregion
+
+		var customerInvoices = _hogWildContext.Invoices
+				.Where(x => x.CustomerID == customerId
+							&& !x.RemoveFromViewFlag)
+				.Select(x => new InvoiceView
+				{
+					InvoiceID = x.InvoiceID,
+					InvoiceDate = x.InvoiceDate,
+					CustomerID = x.CustomerID,
+					SubTotal = x.SubTotal,
+					Tax = x.Tax
+				}).ToList();
+
+		//  if no invoices were found
+		if (customerInvoices == null || customerInvoices.Count() == 0)
+		{
+			result.AddError(new Error("No customer invoices", "No invoices were found"));
+			//  need to exit because we did not find any invoices
+			return result;
+		}
+		//  return the result
+		return result.WithValue(customerInvoices);
+	}
+
+	public Result<InvoiceView> AddEditInvoice(InvoiceView invoiceView)
+	{
+		// Create a Result container that will hold either a
+		//	Invoice objects on success or any accumulated errors on failure
+		var result = new Result<InvoiceView>();
+		#region Business Logic and Parameter Exceptions
+		//    These are processing rules that need to be satisfied
+		//        for valid data
+		// rule:    invoice cannot be null
+		if (invoiceView == null)
+		{
+			result.AddError(new Error("Missing Invoice",
+					"No invoice was supplied"));
+			//  need to exit because we have no invoice record
+			return result;
+		}
+		// rule:    customer id must be supply
+		if (invoiceView.CustomerID == 0)
+		{
+			result.AddError(new Error("Missing Information",
+					"Please provide a valid customer ID"));
+		}
+		// rule:    employee id must be supply    
+		if (invoiceView.EmployeeID == 0)
+		{
+			result.AddError(new Error("Missing Information",
+					"Please provide a valid employee ID"));
+		}
+		// rule:    there must be invoice lines provided
+		if (invoiceView.InvoiceLines.Count == 0)
+		{
+			result.AddError(new Error("Missing Information",
+					"Invoice details are required"));
+		}
+
+		// rule:    for each invoice line, there must be a part
+		// rule:    for each invoice line, the price cannot be less than zero
+		// rule:    for each invoice line, the quantity cannot be less than 1
+		foreach (var invoiceLine in invoiceView.InvoiceLines)
+		{
+			if (invoiceLine.PartID == 0)
+			{
+				result.AddError(new Error("Missing Information",
+						"Missing part ID"));
+				//  need to exit because we have no part information to process further
+				return result;
+			}
+			if (invoiceLine.Price < 0)
+			{
+				string partName = _hogWildContext.Parts
+									.Where(x => x.PartID == invoiceLine.PartID)
+									.Select(x => x.Description)
+									.FirstOrDefault();
+				result.AddError(new Error("Invalid Price",
+						$"Part {partName} has a price that is less than zero"));
+			}
+			if (invoiceLine.Quantity < 1)
+			{
+				string partName = _hogWildContext.Parts
+									.Where(x => x.PartID == invoiceLine.PartID)
+									.Select(x => x.Description)
+									.FirstOrDefault();
+				result.AddError(new Error("Invalid Quantity",
+						$"Part {partName} has a quantity that is less than one"));
+			}
+		}
+
+		// rule:    parts cannot be duplicated on more than one line.
+		List<string> duplicatedParts = invoiceView.InvoiceLines
+										.GroupBy(x => new { x.PartID })
+										.Where(gb => gb.Count() > 1)
+										.OrderBy(gb => gb.Key.PartID)
+										.Select(gb => _hogWildContext.Parts
+														.Where(p => p.PartID == gb.Key.PartID)
+														.Select(p => p.Description)
+														.FirstOrDefault()
+										).ToList();
+		if (duplicatedParts.Count > 0)
+		{
+			foreach (var partName in duplicatedParts)
+			{
+				result.AddError(new Error("Duplicate Invoice Line Items",
+						$"Part {partName} can only be added to the invoice lines once."));
+			}
+		}
+
+		//  exit if we have any outstanding errors
+		if (result.IsFailure)
+		{
+			return result;
+		}
+		#endregion
+
+		// Retrieve the invoice from the database or create a new one if it doesn't exist.
+		Invoice invoice = _hogWildContext.Invoices
+								.Where(x => x.InvoiceID == invoiceView.InvoiceID)
+								.FirstOrDefault();
+		// If the invoice doesn't exist, initialize it.
+		if (invoice == null)
+		{
+			invoice = new Invoice();
+			// Set the current date for new invoices.
+			invoice.InvoiceDate = DateOnly.FromDateTime(DateTime.Now);
+		}
+
+		// Update invoice properties from the view model
+		invoice.CustomerID = invoiceView.CustomerID;
+		invoice.EmployeeID = invoiceView.EmployeeID;
+		invoice.RemoveFromViewFlag = invoiceView.RemoveFromViewFlag;
+		//  reset the subtotal & tax as this will be updated from the invoice lines.
+		invoice.SubTotal = 0;
+		invoice.Tax = 0;
+
+		// Process each line item in the provided view model.
+		foreach (var invoiceLineView in invoiceView.InvoiceLines)
+		{
+			InvoiceLine invoiceLine = _hogWildContext.InvoiceLines
+											.Where(x => x.InvoiceLineID == invoiceLineView.InvoiceLineID
+													&& !x.RemoveFromViewFlag)
+											.FirstOrDefault();
+			// If the line item doesn't exist, initialize it.
+			if (invoiceLine == null)
+			{
+				invoiceLine = new InvoiceLine();
+				invoiceLine.PartID = invoiceLineView.PartID;
+			}
+			// Update invoice line properties from the view model
+			invoiceLine.Quantity = invoiceLineView.Quantity;
+			invoiceLine.Price = invoiceLineView.Price;
+			invoiceLine.RemoveFromViewFlag = invoiceLineView.RemoveFromViewFlag;
+
+			// Handle new or existing line items.
+			if (invoiceLine.InvoiceLineID == 0)
+			{
+				// Add new line items to the invoice entity.
+				invoice.InvoiceLines.Add(invoiceLine);
+			}
+			else
+			{
+				// Update the database record with the existing line items.
+				_hogWildContext.InvoiceLines.Update(invoiceLine);
+			}
+
+			//    need to update total and tax if the 
+			//        invoice line item is not set to be removed from view.
+			if (!invoiceLine.RemoveFromViewFlag)
+			{
+				invoice.SubTotal += invoiceLine.Quantity * invoiceLine.Price;
+				bool isTaxable = _hogWildContext.Parts
+									.Where(x => x.PartID == invoiceLine.PartID)
+									.Select(x => x.Taxable)
+									.FirstOrDefault();
+				invoice.Tax += isTaxable ? invoiceLine.Quantity * invoiceLine.Price * .05m : 0;
+			}
+		}
+		// If it's a new invoice, add it to the collection.
+		if (invoice.InvoiceID == 0)
+		{
+			//  add the invoice to the invoice table
+			_hogWildContext.Invoices.Add(invoice);
+		}
+		else
+		{
+			//  update the invoice in the invoice table
+			_hogWildContext.Invoices.Update(invoice);
+		}
+
+		try
+		{
+			// NOTE:  YOU CAN ONLY HAVE ONE SAVE CHANGES IN A METHOD  
+			_hogWildContext.SaveChanges();
+		}
+		catch (Exception ex)
+		{
+			// Clear changes to maintain data integrity.
+			_hogWildContext.ChangeTracker.Clear();
+			// we do not have to throw an exception, just need to log the error message
+			result.AddError(new Error(
+				"Error Saving Changes", ex.InnerException.Message));
+			//  need to return the result
+			return result;
+		}
+		//  need to refresh the customer information
+		return GetInvoice(invoice.InvoiceID, invoice.CustomerID, invoice.EmployeeID);
 	}
 }
 #endregion
