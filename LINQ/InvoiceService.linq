@@ -342,8 +342,7 @@ public class Library
 		if (part == null)
 		{
 			//  need to exit because we did not find any part
-			return result.AddError(new Error("No part", "No part were found"));
-			
+			return result.AddError(new Error("No part", "No part were found"));		
 		}
 
 		//  return the result
