@@ -1,13 +1,13 @@
 <Query Kind="Program">
   <Connection>
-    <ID>cb92c0e3-4ff0-43ea-9726-2fe3c34b87cd</ID>
+    <ID>37a64ce9-5c5f-4d4d-afc7-7324799c8fda</ID>
     <NamingServiceVersion>2</NamingServiceVersion>
     <Persist>true</Persist>
     <Driver Assembly="(internal)" PublicKeyToken="no-strong-name">LINQPad.Drivers.EFCore.DynamicDriver</Driver>
     <AllowDateOnlyTimeOnly>true</AllowDateOnlyTimeOnly>
     <Server>.</Server>
     <Database>OLTP-DMIT2018</Database>
-    <DisplayName>OLTP-DMIT2018-Entity</DisplayName>
+    <DisplayName>OLTP-DMIT2018-ENtity</DisplayName>
     <DriverData>
       <EncryptSqlTraffic>True</EncryptSqlTraffic>
       <PreserveNumeric1>True</PreserveNumeric1>
@@ -74,22 +74,22 @@ void Main()
 	#endregion
 
 	#region GetInvoice
-		//	Fail
-		//	Rule:  Customer IDs must be greater than zero
-		codeBehind.GetInvoice(0, 0, 1);
-		codeBehind.ErrorDetails.Dump("CustomerID must be greater than zero");
-	
-		//	Rule:  Employee IDs must be greater than zero
-		codeBehind.GetInvoice(0, 1, 0);
-		codeBehind.ErrorDetails.Dump("EmployeeID must be greater than zero");
-	
-		// Pass:  New Invoice
-		codeBehind.GetInvoice(0, 1, 1);
-		codeBehind.Invoice.Dump("Pass - New Invoice");
-	
-		// Pass:  Existing Invoice
-		codeBehind.GetInvoice(1, 1, 1);
-		codeBehind.Invoice.Dump("Pass - Existing Invoice");
+	//	Fail
+	//	Rule:  Customer IDs must be greater than zero
+	codeBehind.GetInvoice(0, 0, 1);
+	codeBehind.ErrorDetails.Dump("CustomerID must be greater than zero");
+
+	//	Rule:  Employee IDs must be greater than zero
+	codeBehind.GetInvoice(0, 1, 0);
+	codeBehind.ErrorDetails.Dump("EmployeeID must be greater than zero");
+
+	// Pass:  New Invoice
+	codeBehind.GetInvoice(0, 1, 1);
+	codeBehind.Invoice.Dump("Pass - New Invoice");
+
+	// Pass:  Existing Invoice
+	codeBehind.GetInvoice(1, 1, 1);
+	codeBehind.Invoice.Dump("Pass - Existing Invoice");
 	#endregion
 
 }
@@ -249,10 +249,9 @@ public class Library
 
 		if (partCategoryID == 0 && string.IsNullOrWhiteSpace(description))
 		{
-			result.AddError(new Error("Missing Information",
-				"Please provide either a category and/or description"));
 			//  need to exit because we have no part information
-			return result;
+			return result.AddError(new Error("Missing Information",
+				"Please provide either a category and/or description"));
 		}
 		#endregion
 
@@ -295,6 +294,7 @@ public class Library
 		//  if no parts were found
 		if (parts == null || parts.Count == 0)
 		{
+			//  need to exit because we did not find any parts
 			return result.AddError(new Error("No parts", "No parts were found"));
 		}
 
@@ -314,10 +314,9 @@ public class Library
 		//		rule: 	RemoveFromViewFlag must be false
 		if (partID == 0)
 		{
-			result.AddError(new Error("Missing Information",
-							"Please provide a valid part id"));
 			//  need to exit because we have no part information
-			return result;
+			return result.AddError(new Error("Missing Information",
+							"Please provide a valid part id"));			
 		}
 		#endregion
 
@@ -342,9 +341,9 @@ public class Library
 		//  if no part were found
 		if (part == null)
 		{
-			result.AddError(new Error("No part", "No part were found"));
 			//  need to exit because we did not find any part
-			return result;
+			return result.AddError(new Error("No part", "No part were found"));
+			
 		}
 
 		//  return the result
@@ -433,9 +432,8 @@ public class Library
 		//  only happens if the invoice was mark as remove
 		if (invoice == null)
 		{
-			result.AddError(new Error("No Invoice", "No invoice were found"));
 			//  need to exit because we did not find any invoice
-			return result;
+			return result.AddError(new Error("No Invoice", "No invoice were found"));						
 		}
 		//  return the result
 		return result.WithValue(invoice);
