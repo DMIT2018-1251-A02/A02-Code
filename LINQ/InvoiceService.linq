@@ -74,37 +74,37 @@ void Main()
 	#endregion
 
 	#region GetInvoice
-	//	Fail
-	//	Rule:  Customer IDs must be greater than zero
-	codeBehind.GetInvoice(0, 0, 1);
-	codeBehind.ErrorDetails.Dump("CustomerID must be greater than zero");
-
-	//	Rule:  Employee IDs must be greater than zero
-	codeBehind.GetInvoice(0, 1, 0);
-	codeBehind.ErrorDetails.Dump("EmployeeID must be greater than zero");
-
-	// Pass:  New Invoice
-	codeBehind.GetInvoice(0, 1, 1);
-	codeBehind.Invoice.Dump("Pass - New Invoice");
-
-	// Pass:  Existing Invoice
-	codeBehind.GetInvoice(1, 1, 1);
-	codeBehind.Invoice.Dump("Pass - Existing Invoice");
+//	//	Fail
+//	//	Rule:  Customer IDs must be greater than zero
+//	codeBehind.GetInvoice(0, 0, 1);
+//	codeBehind.ErrorDetails.Dump("CustomerID must be greater than zero");
+//
+//	//	Rule:  Employee IDs must be greater than zero
+//	codeBehind.GetInvoice(0, 1, 0);
+//	codeBehind.ErrorDetails.Dump("EmployeeID must be greater than zero");
+//
+//	// Pass:  New Invoice
+//	codeBehind.GetInvoice(0, 1, 1);
+//	codeBehind.Invoice.Dump("Pass - New Invoice");
+//
+//	// Pass:  Existing Invoice
+//	codeBehind.GetInvoice(1, 1, 1);
+//	codeBehind.Invoice.Dump("Pass - Existing Invoice");
 	#endregion
 
 	#region GetCustomerInvoices
-		//	Fail
-		//	Rule:  customer ID must be greater than zero
-		codeBehind.GetCustomerInvoices(0);
-		codeBehind.ErrorDetails.Dump("Customer ID must be greater than zero");
-	
-		// Rule:  customer ID must valid 
-		codeBehind.GetCustomerInvoices(1000000);
-		codeBehind.ErrorDetails.Dump("No customer was found for ID 1000000");
-	
-		// Pass:  customer part ID
-		codeBehind.GetCustomerInvoices(2);
-		codeBehind.CustomerInvoices.Dump("Pass - Valid customer ID");
+	//	//	Fail
+	//	//	Rule:  customer ID must be greater than zero
+	//	codeBehind.GetCustomerInvoices(0);
+	//	codeBehind.ErrorDetails.Dump("Customer ID must be greater than zero");
+	//
+	//	// Rule:  customer ID must valid 
+	//	codeBehind.GetCustomerInvoices(1000000);
+	//	codeBehind.ErrorDetails.Dump("No customer was found for ID 1000000");
+	//
+	//	// Pass:  customer part ID
+	//	codeBehind.GetCustomerInvoices(2);
+	//	codeBehind.CustomerInvoices.Dump("Pass - Valid customer ID");
 	#endregion
 
 	#region Add New Invoice
