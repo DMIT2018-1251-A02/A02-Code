@@ -8,6 +8,7 @@
         private string emailText = string.Empty;
         private string passwordText = string.Empty;
         private DateTime dateText = DateTime.Today;
+        private string feedback = string.Empty;
         #endregion
 
         #region Properties
@@ -54,6 +55,12 @@
             oddEvenValue = rnd.Next(0, 25);
         }
 
+        //Method is called when the user submits the text input to update the resulting feedback
+        private void TextSubmit()
+        {
+            //  Combine the values of emailText, passwordTex, and dateText into a feedback message
+            feedback = $"Email: {emailText}; Password: {passwordText}; Date: {dateText.ToString("d")}";
+        }
 
         #endregion
 
