@@ -42,7 +42,7 @@ namespace HogWildApp.Components.Pages.SamplePages
         protected NavigationManager NavigationManager { get; set; } = default!;
 
         //  list of customer search views
-        protected List<CustomerSearchView> CustomerSearchViews { get; set; } = new();
+        protected List<CustomerSearchView> Customers { get; set; } = new();
         #endregion
 
         #region Methods
@@ -54,7 +54,7 @@ namespace HogWildApp.Components.Pages.SamplePages
             feedbackMessage = string.Empty;
 
             //  clear customer list
-            CustomerSearchViews.Clear();
+            Customers.Clear();
 
             //	wrap the service call in a try/catch to handle unexpected exceptions
             try
@@ -62,7 +62,7 @@ namespace HogWildApp.Components.Pages.SamplePages
                 var result = CustomerService.GetCustomers(lastName, phoneNumber);
                 if (result.IsSuccess)
                 {
-                    CustomerSearchViews = result.Value;
+                    Customers = result.Value;
                 }
                 else
                 {
@@ -72,7 +72,6 @@ namespace HogWildApp.Components.Pages.SamplePages
                     }
                     errorDetails = HogWildHelperClass.GetErrorMessages(result.Errors.ToList());
                 }
-
             }
             catch (Exception ex)
             {

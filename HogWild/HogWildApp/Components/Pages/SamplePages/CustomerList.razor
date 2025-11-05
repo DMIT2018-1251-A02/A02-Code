@@ -47,9 +47,9 @@
     </MudButton>
 </MudStack>
 
-@if (CustomerSearchViews?.Count() > 0)
+@if (Customers?.Count() > 0)
 {
-    <MudDataGrid Items="CustomerSearchViews"
+    <MudDataGrid Items="Customers"
                  Striped="true"
                  FixedFooter="true"
                  FixedHeader="true"
