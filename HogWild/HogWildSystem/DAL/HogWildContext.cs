@@ -28,6 +28,8 @@ internal partial class HogWildContext : DbContext
 
     public virtual DbSet<Part> Parts { get; set; }
 
+    public virtual DbSet<UnitTest> UnitTests { get; set; }
+
     public virtual DbSet<WorkingVersion> WorkingVersions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -124,6 +126,11 @@ internal partial class HogWildContext : DbContext
             entity.HasOne(d => d.PartCategory).WithMany(p => p.Parts)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Part_Lookup_FK");
+        });
+
+        modelBuilder.Entity<UnitTest>(entity =>
+        {
+            entity.Property(e => e.UnitTestID).ValueGeneratedOnAdd();
         });
 
         modelBuilder.Entity<WorkingVersion>(entity =>

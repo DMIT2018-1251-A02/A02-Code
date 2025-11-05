@@ -3,6 +3,7 @@ namespace HogWildApp.Components
 {
     public static class HogWildHelperClass
     {
+        // Converts a list of error objects into their string representations.
         public static List<string> GetErrorMessages(List<Error> errorMessage)
         {
             // Initialize a new list to hold the extracted error messages

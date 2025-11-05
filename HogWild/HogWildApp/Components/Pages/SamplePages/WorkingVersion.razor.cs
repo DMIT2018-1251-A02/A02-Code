@@ -1,24 +1,25 @@
-﻿using HogWildSystem.BLL;
+﻿//#nullable disable
+using HogWildSystem.BLL;
 using HogWildSystem.ViewModels;
 using Microsoft.AspNetCore.Components;
 
 namespace HogWildApp.Components.Pages.SamplePages
 {
-    public partial class WorkingVersions
+    public partial class WorkingVersion
     {
         #region Fields
-        // this field holds a reference to the WorkingVersionsView instance
-        private WorkingVersionsView workingVersionsView = default!;
-
-        //  fields for holding any feedback message
+        //  feedback message
         private string feedback = string.Empty;
+        //  holds a reference to the WorkingVersionView instance.
+        private WorkingVersionsView workingVersionsView = new WorkingVersionsView();
         #endregion
 
+
         #region Properties
-        // This attribute marks the propertu for dependency injection
+        //  This attribute marks the property for dependency injection
         [Inject]
-        //  this property provides access to the 'WorkingVersionService' service
-        protected WorkingVersionsService WorkingVersionsService { get; set; } = default!;
+        //  This property provides access to the 'WorkingVersionsService' service
+        protected WorkingVersionsService WorkingVersionsService { get; set; }
         #endregion
 
         #region Methods
@@ -30,12 +31,9 @@ namespace HogWildApp.Components.Pages.SamplePages
             }
             catch (Exception ex)
             {
-                //  capture any exception message for display
                 feedback = ex.Message;
-
             }
         }
-
         #endregion
     }
 }
