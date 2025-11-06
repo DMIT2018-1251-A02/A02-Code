@@ -33,3 +33,55 @@ else
     </MudAlert>
 }
 
+<MudForm @ref="customerForm">
+    <MudGrid>
+        <!-- Column One-->
+        <MudItem xs="6">
+            <MudTextField Label="First Name"
+                          @bind-Value="customer.FirstName"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="First Name is required"
+                          MaxLength="20"
+                          Immediate="true" />
+            <MudTextField Label="Last Name"
+                          @bind-Value="customer.LastName"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="Last Name is required"
+                          MaxLength="50"
+                          Immediate="true" />
+            <MudTextField Label="Address 1"
+                          @bind-Value="customer.Address1"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="Address 1 is required"
+                          MaxLength="50"
+                          Immediate="true" />
+            <MudTextField Label="Address 2"
+                          @bind-Value="customer.Address2"
+                          Variant="Variant.Outlined"
+                          MaxLength="50"
+                          Immediate="true" />
+            <MudTextField Label="City"
+                          @bind-Value="customer.City"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="City is required"
+                          MaxLength="50"
+                          Immediate="true" />
+            <MudSelect @bind-Value="customer.ProvStateID"
+                       Variant="Variant.Outlined"
+                       Label="Province"
+                       Required="true"
+                       RequiredError="You must select a Province">
+                @foreach (var item in provinces)
+                {
+                    <MudSelectItem T="int" Value="@item.LookupID">@item.Name</MudSelectItem>
+                }
+
+
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
+</MudForm>
