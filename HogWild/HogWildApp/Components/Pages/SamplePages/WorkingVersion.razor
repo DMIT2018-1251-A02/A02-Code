@@ -1,10 +1,7 @@
-﻿@page "/SamplePages/WorkingVersions"
+﻿@page "/SamplePages/WorkingVersion"
 @using MudBlazor
-
 <PageTitle>Working Version</PageTitle>
-
-<!-- Display a heading using MudBlazor's MudText component with "h3" typography-->
-<MudText Typo="Typo.h3">Current Working Version Info</MudText>
+<MudText Typo="Typo.h3">Current Working Version Info </MudText>
 
 @if (workingVersionsView?.VersionID > 0)
 {
@@ -16,23 +13,15 @@
     <MudText Typo="Typo.h5"><strong>Date:</strong>@workingVersionsView.AsOfDate</MudText>
     <MudText Typo="Typo.h5"><strong>Comments:</strong>@workingVersionsView.Comments</MudText>
 }
-
 <MudButton OnClick="GetWorkingVersion"
            Variant="Variant.Filled"
-           Color="Color.Primary">
-    Get Working Version
-</MudButton>
+           Color="Color.Primary">Get Working Version</MudButton>
 
-
-@if (!string.IsNullOrWhiteSpace(feedback))
-{
-    <div class="mt-4">
-        <MudAlert Severity="Severity.Error">
-            <MudText Typo="Typo.h4">@feedback</MudText>
-        </MudAlert>
-    </div>
-}
-
-
-
-
+    @if(!string.IsNullOrWhiteSpace(feedback ))
+    {
+        <div class="mt-4">
+            <MudAlert Severity="Severity.Error">
+                <MudText Typo="Typo.h4">@feedback</MudText>
+            </MudAlert>
+        </div>
+    }

@@ -1,7 +1,12 @@
-﻿using HogWildSystem.BLL;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using HogWildSystem.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using HogWildSystem.BLL;
 
 namespace HogWildSystem
 {
@@ -37,9 +42,6 @@ namespace HogWildSystem
                 return new WorkingVersionsService(context);
             });
 
-            //  adding any services that you create in the class library (BLL)
-            //  using .AddTransient<t>(...)
-            //  working versions
             services.AddTransient<CustomerService>((ServiceProvider) =>
             {
                 //  Retrieve an instance of HogWildContext from the service provider.

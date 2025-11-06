@@ -1,4 +1,5 @@
-﻿using HogWildSystem.DAL;
+﻿
+using HogWildSystem.DAL;
 using HogWildSystem.ViewModels;
 
 namespace HogWildSystem.BLL
@@ -17,7 +18,8 @@ namespace HogWildSystem.BLL
             _hogWildContext = hogWildContext;
         }
 
-        public WorkingVersionsView? GetWorkingVersion()
+        //  This method retrieves the working version of the resource.
+        public WorkingVersionsView GetWorkingVersion()
         {
             return _hogWildContext.WorkingVersions
                 .Select(x => new WorkingVersionsView
@@ -30,8 +32,7 @@ namespace HogWildSystem.BLL
                         AsOfDate = x.AsOfDate,
                         Comments = x.Comments
                     }
-                ).FirstOrDefault();
+                ).FirstOrDefault() ?? new WorkingVersionsView();
         }
-
     }
 }
