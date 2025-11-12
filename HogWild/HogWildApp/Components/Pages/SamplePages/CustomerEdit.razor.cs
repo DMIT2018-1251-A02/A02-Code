@@ -1,7 +1,11 @@
-﻿using HogWildSystem.BLL;
+﻿using BYSResults;
+using HogWildSystem.BLL;
 using HogWildSystem.ViewModels;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using MudBlazor;
+using System.Collections.Generic;
+using System.Globalization;
 using static MudBlazor.Icons;
 
 namespace HogWildApp.Components.Pages.SamplePages
@@ -18,24 +22,39 @@ namespace HogWildApp.Components.Pages.SamplePages
 
         // customer
         private CustomerEditView customer = new();
-        //  the provinces
-        private List<LookupView> provinces = new List<LookupView>();
+        //  provinces
+        private List<LookupView> provinces = new();
         //  countries
-        private List<LookupView> countries = new List<LookupView>();
-        // status lookup
-        private List<LookupView> statusLookups = new List<LookupView>();
-
+        private List<LookupView> countries = new();
+        //  status
+        private List<LookupView> statusLookup = new();
         // mudform control
         private MudForm customerForm = new();
+        #endregion
+
+        #region Validation
+        //  flag if the form is valid.
+        private bool isFormValid = false;
+        //  flag if date has change
+        private bool hasDataChanged = false;
+        //  set text for cancel/close button
+        private string closeButtonText => hasDataChanged ? "Cancel" : "Close";
         #endregion
 
         #region Propertiers
         //  customer service
         [Inject]
-        protected CustomerService CustomerService { get; set; } = default!;
+        protected CustomerService CustomerService { get; set; } = null!;
 
+        //  category lookup service
         [Inject]
-        protected CategoryLookupService CategoryLookupService { get; set; } = default!;
+        protected CategoryLookupService CategoryLookupService { get; set; } = null!;
+
+        //  inject the DialogService dependency
+        [Inject] protected IDialogService DialogService { get; set; } = null!;
+        //  inject the NavigationManager dependency
+        [Inject]
+        protected NavigationManager NavigationManager { get; set; } = null!;
 
         //  Customer ID used to create or edit a customer
         [Parameter]
@@ -44,7 +63,6 @@ namespace HogWildApp.Components.Pages.SamplePages
         #endregion
 
         #region Methods
-
         protected override async Task OnInitializedAsync()
         {
             await base.OnInitializedAsync();
@@ -83,8 +101,6 @@ namespace HogWildApp.Components.Pages.SamplePages
             }
 
             #region Lookups
-
-            //  province
             var results = CategoryLookupService.GetLookups("Province");
             if (results.IsSuccess)
             {
@@ -95,7 +111,6 @@ namespace HogWildApp.Components.Pages.SamplePages
                 errorDetails = HogWildHelperClass.GetErrorMessages(results.Errors.ToList());
             }
 
-            //  countries
             results = CategoryLookupService.GetLookups("Country");
             if (results.IsSuccess)
             {
@@ -103,28 +118,73 @@ namespace HogWildApp.Components.Pages.SamplePages
             }
             else
             {
-                errorDetails = HogWildHelperClass.GetErrorMessages(results.Errors.ToList());
+                errorDetails.AddRange(HogWildHelperClass.GetErrorMessages(results.Errors.ToList()));
             }
 
-            //  status lookup
             results = CategoryLookupService.GetLookups("Customer Status");
             if (results.IsSuccess)
             {
-                statusLookups = results.Value;
+                statusLookup = results.Value;
             }
             else
             {
-                errorDetails = HogWildHelperClass.GetErrorMessages(results.Errors.ToList());
+                errorDetails.AddRange(HogWildHelperClass.GetErrorMessages(results.Errors.ToList()));
             }
-
-
-
             #endregion
 
-            //  update that data has change
+            //  update that data has changed
             StateHasChanged();
         }
-        #endregion
 
+        //  save the customer
+        private void Save()
+        {
+            //	clear previous error details and messages
+            errorDetails.Clear();
+            errorMessage = string.Empty;
+            feedbackMessage = string.Empty;
+
+            //	wrap the service call in a try/catch to handle unexpected exception
+            try
+            {
+                var result = CustomerService.AddEditCustomer(customer);
+                if (result.IsSuccess)
+                {
+                    customer = result.Value;
+                    feedbackMessage = "Data was successfully saved!";
+
+                    //  reset change tracking
+                    hasDataChanged = false;
+                    isFormValid = false;
+                    customerForm.ResetTouched();  //  reset the touched
+                }
+                else
+                {
+                    errorDetails = HogWildHelperClass.GetErrorMessages(result.Errors.ToList());
+                }
+            }
+            catch (Exception ex)
+            {
+                //	capture any exception message for display
+                errorMessage = ex.Message;
+            }
+        }
+
+        //  Cancel or close this instance
+        private async Task Cancel()
+        {
+            bool? result = await DialogService.ShowMessageBox("Confirm Cancel",
+                "Do you wish to close the customer editor?  All unsaved changes will be lost.",
+                yesText: "Yes", cancelText: "No");
+
+            //  true mean affirmative action (e.g. "Yes")
+            //  null means the user dismissed the dialog (e.g. clicking "No" or closing the dialog)
+            if (result == null)
+            {
+                return;
+            }
+            NavigationManager.NavigateTo("/SamplePages/CustomerList");
+        }
+        #endregion
     }
 }

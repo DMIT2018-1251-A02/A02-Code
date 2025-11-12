@@ -1,13 +1,13 @@
 <Query Kind="Program">
   <Connection>
-    <ID>37a64ce9-5c5f-4d4d-afc7-7324799c8fda</ID>
+    <ID>813ec320-8be0-4b91-8ec8-c1549d53aaea</ID>
     <NamingServiceVersion>2</NamingServiceVersion>
     <Persist>true</Persist>
     <Driver Assembly="(internal)" PublicKeyToken="no-strong-name">LINQPad.Drivers.EFCore.DynamicDriver</Driver>
     <AllowDateOnlyTimeOnly>true</AllowDateOnlyTimeOnly>
     <Server>.</Server>
     <Database>OLTP-DMIT2018</Database>
-    <DisplayName>OLTP-DMIT2018-ENtity</DisplayName>
+    <DisplayName>OLTP-DMIT2018-Entity</DisplayName>
     <DriverData>
       <EncryptSqlTraffic>True</EncryptSqlTraffic>
       <PreserveNumeric1>True</PreserveNumeric1>
@@ -804,20 +804,6 @@ public class Library
 		}
 		return GetInvoice(invoice.InvoiceID, invoice.CustomerID, invoice.EmployeeID);
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	//	get the customer full name
 	public string GetCustomerFullName(int customerID)
