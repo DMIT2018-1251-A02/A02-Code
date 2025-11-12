@@ -1,0 +1,121 @@
+﻿@page "/SamplePages/SimpleListToList"
+@using MudBlazor
+
+<!-- 
+  The page directive defines the route for this component. 
+  In this case, navigating to /SamplePages/SimpleListToList will display this page.
+  The using statement makes MudBlazor components available to the page.
+-->
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+    <!-- 
+      MudContainer centers content and provides a responsive layout area.
+      The MaxWidth setting defines how wide the container can grow.
+    -->
+
+    <MudGrid>
+        <!-- 
+          MudGrid creates a responsive grid layout.
+          Each MudItem represents a column or section of the grid.
+        -->
+
+        <MudItem xs="12" md="6">
+            <!-- 
+              xs="12" means the item takes full width on extra-small screens.
+              md="6" means it takes half width (6 of 12 columns) on medium+ screens.
+            -->
+
+            <MudPaper Elevation="4" Class="pa-4">
+                <!-- 
+                  MudPaper provides a raised surface effect.
+                  The Elevation property controls shadow depth (4 = moderate shadow).
+                  The "pa-4" class adds padding.
+                -->
+
+                <h3>Available Inventory</h3>
+
+                <!-- 
+                  First table: displays available inventory items.
+                -->
+                <MudTable Items="inventory" Dense="true">
+                    <!-- 
+                      The Items property binds the table to a collection named "inventory".
+                      Dense="true" makes the rows more compact.
+                    -->
+
+                    <HeaderContent>
+                        <!-- Define the table header columns -->
+                        <MudTh>Description</MudTh>
+                        <MudTh>Price</MudTh>
+                        <MudTh>Action</MudTh>
+                    </HeaderContent>
+
+                    <RowTemplate Context="item">
+                        <!-- 
+                          RowTemplate defines how each row is rendered.
+                          The Context="item" allows you to reference each record in the collection.
+                        -->
+                        <MudTd>@item.Description</MudTd>
+                        <MudTd>@item.Price</MudTd>
+                        <MudTd>
+                            <!-- 
+                              Button to add an item to the shopping cart.
+                              Calls AddPartToCart and passes the PartID for that item.
+                            -->
+                            <MudButton Color="Color.Primary" OnClick="() => AddPartToCart(item.PartID)">
+                                <MudIcon Icon="@Icons.Material.Filled.AddShoppingCart"></MudIcon>
+                            </MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+        </MudItem>
+		
+        <!-- =============================================== -->
+        <!-- Second column: Shopping Cart display -->
+        <!-- =============================================== -->
+
+        <MudItem xs="12" md="6">
+            <MudPaper Elevation="4" Class="pa-4">
+                <h3>Shopping Cart</h3>
+
+                <!-- 
+                  Second table: displays items currently in the shopping cart.
+                -->
+                <MudTable Items="shoppingCart" Dense="true">
+                    <HeaderContent>
+                        <MudTh>Description</MudTh>
+                        <MudTh>Price</MudTh>
+                        <MudTh>Quantity</MudTh>
+                        <MudTh>Action</MudTh>
+                    </HeaderContent>
+
+                    <RowTemplate Context="item">
+                        <!-- Display each shopping cart item -->
+                        <MudTd>@item.Description</MudTd>
+                        <MudTd>@item.Price</MudTd>
+						<MudTd>
+							<!-- Editable quantity using two-way binding -->
+							<MudNumericField T="int"
+											 @bind-Value="item.Quantity"
+											 Min="1"
+											 Max="999"
+											 HideSpinButtons="false"
+											 Class="w-20" />
+						</MudTd>
+                        <MudTd>
+                            <!-- 
+                              Button to remove the item from the cart.
+                              Calls RemovePartFromCart passing the PartID.
+                              Uses a red (Error) color to indicate a destructive action.
+                            -->
+                            <MudButton Color="Color.Error" OnClick="() => RemovePartFromCart(item.PartID)">
+                                <MudIcon Icon="@Icons.Material.Filled.RemoveShoppingCart"></MudIcon>
+                            </MudButton>
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

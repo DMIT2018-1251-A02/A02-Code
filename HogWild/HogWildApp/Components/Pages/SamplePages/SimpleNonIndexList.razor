@@ -1,0 +1,93 @@
+﻿@page "/SamplePages/SimpleNonIndexList"
+@using MudBlazor
+
+<MudContainer MaxWidth="MaxWidth.Small">
+    <!--
+        MudContainer: Acts as a layout wrapper for centering and containing content.
+        MaxWidth="Small" limits how wide the content can expand, keeping it compact and readable.
+    -->
+
+    <MudPaper Elevation="4" Class="pa-4">
+        <!--
+            MudPaper: Provides a card-like surface with elevation (shadow depth).
+            Elevation="4" adds a moderate drop shadow.
+            Class="pa-4" applies padding on all sides.
+        -->
+
+        <h3>Customer List</h3>
+
+        <!-- ============================================================= -->
+        <!-- Input Section: Add New Customer -->
+        <!-- ============================================================= -->
+        <!--
+            MudTextField: Input field for entering a new customer's name.
+            @bind-Value="customerName" enables two-way binding between the text box and the 'customerName' variable.
+            Label: Displays a hint inside the text box.
+            Variant="Outlined" gives the field an outlined style.
+            Adornment="End" adds an icon inside the input field on the right side.
+            AdornmentIcon: The icon displayed (PersonAdd).
+            OnAdornmentClick="AddCustomerToList" allows clicking the icon to trigger the same method as the Add button.
+        -->
+        <MudTextField @bind-Value="customerName" Label="Enter Customer Name"
+                      Variant="Variant.Outlined" Adornment="Adornment.End"
+                      AdornmentIcon="@Icons.Material.Filled.PersonAdd"
+                      OnAdornmentClick="AddCustomerToList">
+        </MudTextField>
+
+        <!--
+            MudButton: Button for adding the entered customer to the list.
+            Color="Primary" sets the button color.
+            OnClick triggers the AddCustomerToList method.
+            Class="mt-2" adds a top margin for spacing.
+        -->
+        <MudButton Color="Color.Primary" OnClick="AddCustomerToList" Class="mt-2">
+            <!--
+                MudIcon: Displays an icon inside the button.
+                Icon="AddCircleOutline" visually reinforces the add action.
+            -->
+            <MudIcon Icon="@Icons.Material.Filled.AddCircleOutline" />
+            Add Customer
+        </MudButton>
+
+        <!-- ============================================================= -->
+        <!-- Customer Table -->
+        <!-- ============================================================= -->
+        <!--
+            MudTable: Displays the list of customers.
+            Items="Customers" binds the table to the 'Customers' collection.
+            Dense="true" makes the table rows more compact.
+            Class="mt-4" adds space above the table.
+        -->
+        <MudTable Items="Customers" Dense="true" Class="mt-4">
+            <HeaderContent>
+                <!--
+                    Defines the column headers for the table.
+                -->
+                <MudTh>Customer ID</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Action</MudTh>
+            </HeaderContent>
+
+            <!--
+                RowTemplate: Defines how each row is rendered.
+                Context="item" allows referencing each customer record.
+            -->
+            <RowTemplate Context="item">
+                <!-- Display customer details -->
+                <MudTd>@item.CustomerID</MudTd>
+                <MudTd>@item.FirstName</MudTd>
+
+                <!--
+                    Action column: Delete button.
+                    Calls RemoveCustomer with the selected customer's ID.
+                -->
+                <MudTd>
+                    <MudButton Color="Color.Error"
+                               OnClick="() => RemoveCustomer(item.CustomerID)">
+                        <MudIcon Icon="@Icons.Material.Filled.Delete" />
+                    </MudButton>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+</MudContainer>
