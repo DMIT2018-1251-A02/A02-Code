@@ -16,7 +16,7 @@ var connectionStringHogWild = builder.Configuration.GetConnectionString("OLTP-DM
 builder.Services.AddBackendDependencies(options =>
     options.UseSqlServer(connectionStringHogWild));
 
-
+builder.Services.AddScoped<CartState>();
 
 var app = builder.Build();
 

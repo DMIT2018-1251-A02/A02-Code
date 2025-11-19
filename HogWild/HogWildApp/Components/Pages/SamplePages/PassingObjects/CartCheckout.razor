@@ -1,0 +1,102 @@
+﻿@page "/SamplePages/PassingObjects/CartCheckout"
+@using MudBlazor
+
+<!--
+    CartCheckout:
+    - Displays a read-only view of the shopping cart
+    - Shows the SubTotal, Tax, and Total in the table footer
+    - Allows navigation back to Cart Edit to make changes
+-->
+<MudContainer MaxWidth="MaxWidth.ExtraLarge">
+
+    <MudGrid>
+        <!--
+            Single column layout (full width on small screens,
+            half-width on medium and larger).
+        -->
+        <MudItem xs="12" md="6">
+
+            <MudPaper Elevation="4" Class="pa-4">
+                <h3>Shopping Cart</h3>
+
+                <!--
+                    MudTable displays the list of cart items.
+                    CustomFooter="true" allows us to define our own footer rows
+                    for SubTotal, Tax, and Total.
+                -->
+                <MudTable Items="shoppingCart"
+                          Dense="true"
+                          CustomFooter="true">
+
+                    <!-- Table headers -->
+                    <HeaderContent>
+                        <MudTh>Description</MudTh>
+                        <MudTh>Price</MudTh>
+                        <MudTh>Quantity</MudTh>
+                    </HeaderContent>
+
+                    <!-- One row per cart item -->
+                    <RowTemplate Context="item">
+                        <MudTd>@item.Description</MudTd>
+                        <MudTd>@item.Price.ToString("C")</MudTd>
+                        <MudTd>@item.Quantity</MudTd>
+                    </RowTemplate>
+
+                    <!--
+                        FooterContent section:
+                        - First row is a spacer for visual breathing room
+                        - Remaining rows show SubTotal, Tax, and Total
+                          aligned with the Price/Quantity columns.
+                    -->
+                    <FooterContent>
+
+                        <!-- Spacer row for vertical breathing room -->
+                        <MudTFootRow Class="mud-height-40">
+                            <MudTd></MudTd>
+                            <MudTd></MudTd>
+                            <MudTd></MudTd>
+                        </MudTFootRow>
+
+                        <!-- SubTotal row -->
+                        <MudTFootRow>
+                            <MudTd></MudTd>
+                            <MudTd Class="font-weight-bold">SubTotal:</MudTd>
+                            <MudTd Class="text-right">@subTotal.ToString("C")</MudTd>
+                        </MudTFootRow>
+
+                        <!-- Tax row -->
+                        <MudTFootRow>
+                            <MudTd></MudTd>
+                            <MudTd Class="font-weight-bold">
+                                Tax 5%:
+                            </MudTd>
+                            <MudTd Class="text-right">@tax.ToString("C")</MudTd>
+                        </MudTFootRow>
+
+                        <!-- Total row -->
+                        <MudTFootRow>
+                            <MudTd></MudTd>
+                            <MudTd Class="font-weight-bold">Total:</MudTd>
+                            <MudTd Class="text-right">@total.ToString("C")</MudTd>
+                        </MudTFootRow>
+
+                    </FooterContent>
+
+                </MudTable>
+            </MudPaper>
+
+        </MudItem>
+    </MudGrid>
+
+    <!--
+        Navigation button:
+        - Returns the user to the Cart Edit page
+        - The current cart is stored in CartState via the code-behind
+    -->
+    <MudButton Variant="Variant.Filled"
+               Color="Color.Primary"
+               OnClick="GotoCartCartEdit">
+        Goto Cart Edit
+    </MudButton>
+
+</MudContainer>

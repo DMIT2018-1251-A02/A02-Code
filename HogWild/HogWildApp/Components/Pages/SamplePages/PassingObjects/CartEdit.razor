@@ -1,0 +1,76 @@
+﻿@page "/SamplePages/PassingObjects/CartEdit"
+@using MudBlazor
+
+<!--
+    MudForm is used so we can validate all quantity fields at once.
+    The @ref allows us to trigger validation on page load.
+-->
+<MudForm @ref="cartEditForm">
+
+    <MudGrid>
+        <!--
+            MudGrid creates a responsive layout.
+            This column holds the editable cart.
+        -->
+        <MudItem xs="12" md="6">
+
+            <MudPaper Elevation="4" Class="pa-4">
+                <h3>Edit Shopping Cart</h3>
+
+                <!-- Editable cart table -->
+                <MudTable Items="shoppingCart" Dense="true">
+
+                    <!-- Column headers -->
+                    <HeaderContent>
+                        <MudTh>Description</MudTh>
+                        <MudTh>Price</MudTh>
+                        <MudTh>Quantity</MudTh>
+                    </HeaderContent>
+
+                    <!-- One row per cart item -->
+                    <RowTemplate Context="item">
+
+                        <!-- Description column -->
+                        <MudTd>@item.Description</MudTd>
+
+                        <!-- Price column -->
+                        <MudTd>@item.Price.ToString("C")</MudTd>
+
+                        <!-- Quantity column (editable) -->
+                        <MudTd>
+                            <!--
+                                Immediate="true" updates value as typed
+                                Validation uses the ValidateQuantity method in code-behind
+                            -->
+                            <MudNumericField T="int"
+                                             @bind-Value="item.Quantity"
+                                             For="@(() => item.Quantity)"
+                                             Immediate="true"
+                                             Validation="ValidateQuantity"
+                                             HideSpinButtons="true"
+                                             Class="w-20" />
+                        </MudTd>
+
+                    </RowTemplate>
+
+                </MudTable>
+            </MudPaper>
+
+        </MudItem>
+    </MudGrid>
+
+</MudForm>
+
+<!-- Navigation Buttons -->
+<MudButton Variant="Variant.Filled"
+           Color="Color.Primary"
+           OnClick="GotoCartLanding">
+    Goto Cart Landing
+</MudButton>
+
+<MudButton Variant="Variant.Filled"
+           Color="Color.Primary"
+           OnClick="GotoCartCheckOut"
+           Disabled="@(!isCartValid)">
+    Goto Cart Check Out
+</MudButton>
